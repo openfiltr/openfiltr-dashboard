@@ -1,0 +1,32 @@
+:root {
+  --ion-color-primary: #0f766e;
+  --ion-color-primary-rgb: 15, 118, 110;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-shade: #0d685f;
+  --ion-color-primary-tint: #27847d;
+
+  --ion-color-secondary: #0f4c81;
+  --ion-color-secondary-rgb: 15, 76, 129;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-shade: #0d4371;
+  --ion-color-secondary-tint: #285d8e;
+
+  --ion-color-success: #15803d;
+  --ion-color-warning: #b45309;
+  --ion-color-danger: #dc2626;
+  --ion-color-medium: #64748b;
+
+  --ion-background-color: #eff3ee;
+  --ion-background-color-rgb: 239, 243, 238;
+  --ion-text-color: #102027;
+  --ion-text-color-rgb: 16, 32, 39;
+
+  --ion-card-background: #ffffff;
+  --ion-toolbar-background: rgba(246, 247, 241, 0.92);
+  --ion-item-background: transparent;
+
+  --app-font-family: "Aptos", "Segoe UI Variable", "Segoe UI", sans-serif;
+  --app-surface: rgba(255, 255, 255, 0.88);
+  --app-muted: #52626d;
+  --app-text: #102027;
+}
