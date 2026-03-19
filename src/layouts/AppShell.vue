@@ -39,21 +39,22 @@
       </ion-menu>
 
       <div id="shell-main" class="shell-content">
-        <ion-header translucent>
-          <ion-toolbar class="shell-toolbar">
-            <ion-buttons slot="start">
-              <ion-menu-button />
-            </ion-buttons>
-            <ion-title class="shell-toolbar__title">{{ currentTitle }}</ion-title>
-            <ion-buttons slot="end">
-              <ion-chip color="primary" outline>
-                <ion-label>{{ auth.user?.username }}</ion-label>
-              </ion-chip>
-            </ion-buttons>
-          </ion-toolbar>
-        </ion-header>
+        <div class="shell-topbar">
+          <div class="shell-topbar__start">
+            <ion-button fill="clear" class="shell-topbar__menu-button" @click="openMenu">
+              <ion-icon slot="icon-only" :icon="menuOutline" />
+            </ion-button>
+            <h1 class="shell-topbar__title">{{ currentTitle }}</h1>
+          </div>
 
-        <ion-router-outlet />
+          <ion-chip color="primary" outline>
+            <ion-label>{{ auth.user?.username }}</ion-label>
+          </ion-chip>
+        </div>
+
+        <div class="shell-router-shell">
+          <ion-router-outlet />
+        </div>
       </div>
     </ion-split-pane>
   </ion-page>
@@ -62,24 +63,20 @@
 <script setup lang="ts">
 import {
   IonButton,
-  IonButtons,
   IonChip,
   IonContent,
-  IonHeader,
   IonIcon,
   IonItem,
   IonLabel,
   IonList,
   IonMenu,
-  IonMenuButton,
   IonMenuToggle,
   IonPage,
   IonRouterOutlet,
   IonSplitPane,
-  IonTitle,
-  IonToolbar,
   menuController,
 } from '@ionic/vue'
+import { menuOutline } from 'ionicons/icons'
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -99,6 +96,10 @@ const currentTitle = computed(() => titleLookup.get(route.path) ?? 'OpenFiltr Da
 async function navigate(path: string) {
   await router.push(path)
   await menuController.close()
+}
+
+async function openMenu() {
+  await menuController.open()
 }
 
 async function signOut() {

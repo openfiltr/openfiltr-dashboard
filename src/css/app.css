@@ -1,5 +1,7 @@
 :root {
   color-scheme: light;
+  --shell-topbar-height: 76px;
+  --shell-topbar-height-mobile: 68px;
 }
 
 body {
@@ -331,18 +333,6 @@ select {
   flex: 1 1 240px;
 }
 
-.shell-toolbar {
-  --background: rgba(246, 247, 241, 0.88);
-  --border-color: transparent;
-  backdrop-filter: blur(16px);
-}
-
-.shell-toolbar__title {
-  font-family: var(--app-font-family);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-}
-
 .shell-menu {
   --background: transparent;
   border-right: 1px solid rgba(16, 24, 40, 0.08);
@@ -403,7 +393,69 @@ select {
 }
 
 .shell-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   min-height: 100vh;
+  min-width: 0;
+  width: 100%;
+}
+
+.shell-content ion-router-outlet {
+  flex: 1 1 auto;
+}
+
+.shell-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: var(--shell-topbar-height);
+  padding:
+    calc(env(safe-area-inset-top, 0px) + 0.9rem)
+    1.25rem
+    0.9rem;
+  background: rgba(246, 247, 241, 0.88);
+  border-bottom: 1px solid rgba(16, 24, 40, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.shell-topbar__start {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.shell-topbar__menu-button {
+  margin: 0;
+}
+
+.shell-topbar__title {
+  margin: 0;
+  font-family: var(--app-font-family);
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.shell-router-shell {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.shell-router-shell ion-router-outlet > .ion-page {
+  box-sizing: border-box;
+  padding-top: calc(var(--shell-topbar-height) + env(safe-area-inset-top, 0px));
+}
+
+ion-split-pane:not(.split-pane-visible) > .shell-content {
+  flex-basis: 100%;
+  max-width: 100%;
+  width: 100%;
 }
 
 .meta-list {
@@ -436,6 +488,22 @@ select {
 @media (max-width: 768px) {
   .page-shell {
     padding: 1rem;
+  }
+
+  .shell-topbar {
+    min-height: var(--shell-topbar-height-mobile);
+    padding:
+      calc(env(safe-area-inset-top, 0px) + 0.8rem)
+      1rem
+      0.8rem;
+  }
+
+  .shell-topbar__title {
+    font-size: 1rem;
+  }
+
+  .shell-router-shell ion-router-outlet > .ion-page {
+    padding-top: calc(var(--shell-topbar-height-mobile) + env(safe-area-inset-top, 0px));
   }
 
   .form-grid--two {
