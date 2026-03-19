@@ -1,4 +1,19 @@
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/openfiltr/.github/main/assets/logo.svg" alt="OpenFiltr logo" width="120" />
+
 # OpenFiltr Dashboard
+
+**Standalone Ionic Vue administrative dashboard for the OpenFiltr backend API.**
+
+[![Licence: AGPLv3](https://img.shields.io/badge/Licence-AGPLv3-7C3AED.svg)](LICENSE)
+
+> ⚠️ OpenFiltr dashboard is in active development.
+> This project was bootstrapped with the assistance of AI.
+
+</div>
+
+# What is OpenFiltr Dashboard
 
 Standalone Ionic Vue administrative dashboard for the OpenFiltr backend API.
 
