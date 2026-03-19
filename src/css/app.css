@@ -472,6 +472,10 @@ select {
   margin: 0;
 }
 
+.shell-topbar__account-chip {
+  cursor: pointer;
+}
+
 .shell-topbar__title {
   margin: 0;
   font-family: var(--app-font-family);
@@ -483,6 +487,27 @@ select {
 .shell-router-shell {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+.account-popover {
+  --background: rgba(255, 255, 255, 0.96);
+}
+
+.account-popover__summary {
+  padding: 1rem 1rem 0.5rem;
+}
+
+.account-popover__eyebrow {
+  color: var(--app-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.35rem;
+  text-transform: uppercase;
+}
+
+.account-popover__role {
+  color: var(--app-muted);
+  margin: 0.35rem 0 0;
 }
 
 .shell-router-shell ion-router-outlet > .ion-page {

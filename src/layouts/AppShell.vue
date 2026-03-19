@@ -31,10 +31,6 @@
             </div>
 
             <div class="shell-menu__footer stack">
-              <div v-if="auth.user" class="notice-card notice-card--info">
-                <p class="notice-card__title">{{ auth.user.username }}</p>
-                <p class="notice-card__message">{{ auth.user.role }}</p>
-              </div>
               <ion-button expand="block" fill="outline" color="light" @click="signOut">
                 Sign out
               </ion-button>
@@ -52,10 +48,32 @@
             <h1 class="shell-topbar__title">{{ currentTitle }}</h1>
           </div>
 
-          <ion-chip color="primary" outline>
+          <ion-chip
+            id="account-chip-trigger"
+            button
+            color="primary"
+            outline
+            class="shell-topbar__account-chip"
+          >
+            <ion-icon :icon="personCircleOutline" />
             <ion-label>{{ auth.user?.username }}</ion-label>
           </ion-chip>
         </div>
+
+        <ion-popover trigger="account-chip-trigger" trigger-action="click" side="bottom" alignment="end">
+          <ion-content class="account-popover">
+            <div class="account-popover__summary">
+              <p class="account-popover__eyebrow">Signed in as</p>
+              <strong>{{ auth.user?.username }}</strong>
+              <p class="account-popover__role">{{ auth.user?.role }}</p>
+            </div>
+            <ion-list lines="none">
+              <ion-item button :detail="false" @click="signOut">
+                <ion-label>Sign out</ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-content>
+        </ion-popover>
 
         <div class="shell-router-shell">
           <ion-router-outlet />
@@ -77,11 +95,12 @@ import {
   IonMenu,
   IonMenuToggle,
   IonPage,
+  IonPopover,
   IonRouterOutlet,
   IonSplitPane,
   menuController,
 } from '@ionic/vue'
-import { menuOutline } from 'ionicons/icons'
+import { menuOutline, personCircleOutline } from 'ionicons/icons'
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
