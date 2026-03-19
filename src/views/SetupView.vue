@@ -4,11 +4,20 @@
       <div class="auth-shell">
         <div class="auth-card">
           <div class="auth-card__brand">
-            <h1>First-run setup</h1>
-            <p>
-              Create the initial administrative account for a new OpenFiltr deployment. If the backend has already been
-              set up, the API will reject this with a clear conflict response.
-            </p>
+            <div class="auth-card__brand-copy">
+              <div class="auth-brand__heading">
+                <img
+                  src="/logo-white.svg"
+                  alt="OpenFiltr logo"
+                  class="auth-brand__logo auth-brand__logo--auth"
+                />
+                <h1>First-run setup</h1>
+              </div>
+              <p>
+                Create the initial administrative account for a new OpenFiltr deployment. If the backend has already been
+                set up, the API will reject this with a clear conflict response.
+              </p>
+            </div>
           </div>
 
           <div class="auth-card__panel stack">

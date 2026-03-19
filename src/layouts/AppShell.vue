@@ -5,6 +5,11 @@
         <ion-content class="shell-menu__content">
           <div class="shell-menu__panel">
             <div class="shell-menu__brand">
+              <img
+                src="/logo-white.svg"
+                alt="OpenFiltr logo"
+                class="shell-menu__logo"
+              />
               <h1>OpenFiltr</h1>
               <p>Desktop-first administration for the OpenFiltr DNS filtering API.</p>
             </div>
@@ -41,7 +46,7 @@
       <div id="shell-main" class="shell-content">
         <div class="shell-topbar">
           <div class="shell-topbar__start">
-            <ion-button fill="clear" class="shell-topbar__menu-button" @click="openMenu">
+            <ion-button fill="clear" class="shell-topbar__menu-button ion-hide-lg-up" @click="openMenu">
               <ion-icon slot="icon-only" :icon="menuOutline" />
             </ion-button>
             <h1 class="shell-topbar__title">{{ currentTitle }}</h1>

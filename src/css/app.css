@@ -298,11 +298,24 @@ select {
 }
 
 .auth-card__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
   padding: 2.4rem;
   background:
     linear-gradient(145deg, rgba(15, 118, 110, 0.9), rgba(12, 74, 110, 0.95)),
     linear-gradient(180deg, #115e59 0%, #164e63 100%);
   color: #effcf9;
+}
+
+.auth-card__brand-copy {
+  display: grid;
+  gap: 1rem;
+}
+
+.auth-brand__heading {
+  display: grid;
+  gap: 1rem;
 }
 
 .auth-card__brand h1 {
@@ -312,10 +325,20 @@ select {
 }
 
 .auth-card__brand p {
-  margin: 1rem 0 0;
+  margin: 0;
   max-width: 28rem;
   line-height: 1.65;
   color: rgba(239, 252, 249, 0.82);
+}
+
+.auth-brand__logo {
+  display: block;
+  height: auto;
+  width: clamp(150px, 22vw, 220px);
+}
+
+.auth-brand__logo--auth {
+  width: clamp(88px, 10vw, 112px);
 }
 
 .auth-card__panel {
@@ -335,6 +358,12 @@ select {
 
 .shell-menu {
   --background: transparent;
+  --width: 300px;
+  --max-width: 300px;
+  --min-width: 300px;
+  --side-width: auto;
+  --side-max-width: 300px;
+  --side-min-width: 300px;
   border-right: 1px solid rgba(16, 24, 40, 0.08);
 }
 
@@ -351,10 +380,19 @@ select {
 }
 
 .shell-menu__brand {
+  display: grid;
+  gap: 0.8rem;
   padding: 0.5rem 0.25rem;
 }
 
+.shell-menu__logo {
+  display: block;
+  height: auto;
+  width: 104px;
+}
+
 .shell-menu__brand h1 {
+  color: #ffffff;
   margin: 0;
   font-size: 1.55rem;
   letter-spacing: -0.04em;

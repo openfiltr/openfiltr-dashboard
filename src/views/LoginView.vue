@@ -4,11 +4,20 @@
       <div class="auth-shell">
         <div class="auth-card">
           <div class="auth-card__brand">
-            <h1>OpenFiltr Dashboard</h1>
-            <p>
-              Manage filtering rules, DNS data, clients, monitoring, tokens, and
-              configuration from a standalone frontend that speaks to the OpenFiltr API over HTTP.
-            </p>
+            <div class="auth-card__brand-copy">
+              <div class="auth-brand__heading">
+                <img
+                  src="/logo-white.svg"
+                  alt="OpenFiltr logo"
+                  class="auth-brand__logo auth-brand__logo--auth"
+                />
+                <h1>OpenFiltr Dashboard</h1>
+              </div>
+              <p>
+                Manage filtering rules, DNS data, clients, monitoring, tokens, and
+                configuration from a standalone frontend that speaks to the OpenFiltr API over HTTP.
+              </p>
+            </div>
           </div>
 
           <div class="auth-card__panel stack">
@@ -78,7 +87,12 @@
 </template>
 
 <script setup lang="ts">
-import { IonButton, IonContent, IonInput, IonPage } from '@ionic/vue'
+import {
+  IonButton,
+  IonContent,
+  IonInput,
+  IonPage,
+} from '@ionic/vue'
 import { onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
