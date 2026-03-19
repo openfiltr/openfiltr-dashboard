@@ -79,6 +79,66 @@ docker compose -f docker-compose.example.yml up --build
 
 The backend remains available on port `3000`, while the dashboard is served on port `8080`.
 
+Compose example:
+
+```yaml
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: openfiltr-postgres
+    environment:
+      POSTGRES_DB: openfiltr
+      POSTGRES_USER: openfiltr
+      POSTGRES_PASSWORD: openfiltr
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openfiltr -d openfiltr"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  openfiltr:
+    image: ghcr.io/openfiltr/openfiltr:latest
+    container_name: openfiltr
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "53:5353/udp"
+      - "53:5353/tcp"
+      - "3000:3000"
+    environment:
+      OPENFILTR_DATABASE_URL: postgres://openfiltr:openfiltr@postgres:5432/openfiltr?sslmode=disable
+    volumes:
+      - openfiltr-config:/etc/openfiltr
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/v1/system/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  openfiltr-dashboard:
+    build:
+      context: .
+    image: openfiltr-dashboard:latest
+    container_name: openfiltr-dashboard
+    depends_on:
+      openfiltr:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    environment:
+      OPENFILTR_BACKEND_ORIGIN: http://openfiltr:3000
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  openfiltr-config:
+```
+
 ## Auth model
 
 - The browser uses bearer-token auth.
