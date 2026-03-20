@@ -37,9 +37,9 @@ services:
       start_period: 10s
 
   openfiltr-dashboard:
+    image: ghcr.io/openfiltr/openfiltr-dashboard:latest
     build:
       context: .
-    image: openfiltr-dashboard:latest
     container_name: openfiltr-dashboard
     depends_on:
       openfiltr:
