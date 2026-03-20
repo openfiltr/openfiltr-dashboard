@@ -84,15 +84,26 @@ Open `http://localhost:8080`.
 
 - `postgres:16-alpine`
 - `ghcr.io/openfiltr/openfiltr:latest`
-- the standalone `openfiltr-dashboard` image built from this repository
+- `ghcr.io/openfiltr/openfiltr-dashboard:latest`
+
+The compose file supports both published-image and local-build workflows for the dashboard service:
+
+- `docker compose -f docker-compose.example.yml up -d` uses `ghcr.io/openfiltr/openfiltr-dashboard:latest`
+- `docker compose -f docker-compose.example.yml up --build` rebuilds the dashboard locally from this repository and tags it as `ghcr.io/openfiltr/openfiltr-dashboard:latest`
 
 Start the stack with:
 
 ```bash
-docker compose -f docker-compose.example.yml up --build
+docker compose -f docker-compose.example.yml up -d
 ```
 
 The backend remains available on port `3000`, while the dashboard is served on port `8080`.
+
+To force a local rebuild instead of using the published image:
+
+```bash
+docker compose -f docker-compose.example.yml up --build
+```
 
 Compose example:
 
@@ -136,9 +147,9 @@ services:
       start_period: 10s
 
   openfiltr-dashboard:
+    image: ghcr.io/openfiltr/openfiltr-dashboard:latest
     build:
       context: .
-    image: openfiltr-dashboard:latest
     container_name: openfiltr-dashboard
     depends_on:
       openfiltr:
