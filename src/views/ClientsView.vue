@@ -13,76 +13,74 @@
           </template>
         </page-header>
 
-        <div class="workspace-grid">
-          <div class="stack">
-            <div class="toolbar-row">
-              <ion-searchbar v-model="search" class="search-input" placeholder="Filter by name, identifier, or group" />
-              <ion-note color="medium">{{ filteredItems.length }} of {{ clients.total }} clients</ion-note>
-            </div>
-
-            <data-table
-              :columns="columns"
-              :rows="filteredItems"
-              :loading="clients.loading"
-              :error="clients.error"
-              empty-title="No clients"
-              empty-message="Create a client definition to match requests by IP, MAC, or host identifier."
-              :selected-id="selectedId"
-              @retry="refresh"
-              @select="selectItem"
-            >
-              <template #cell-name="{ row }">
-                <div>
-                  <strong>{{ row.name }}</strong>
-                  <p class="muted mono" style="margin: 0.35rem 0 0;">{{ row.identifier }}</p>
-                </div>
-              </template>
-              <template #cell-group="{ row }">
-                {{ groupName(row.groupId) }}
-              </template>
-              <template #cell-updatedAt="{ row }">
-                {{ formatDateTime(row.updatedAt) }}
-              </template>
-              <template #actions="{ row }">
-                <ion-button size="small" fill="clear" @click="selectItem(row)">Edit</ion-button>
-                <ion-button size="small" fill="clear" color="danger" @click="removeItem(row.id)">Delete</ion-button>
-              </template>
-            </data-table>
+        <div class="stack">
+          <div class="toolbar-row">
+            <ion-searchbar v-model="search" class="search-input" placeholder="Filter by name, identifier, or group" />
+            <ion-note color="medium">{{ filteredItems.length }} of {{ clients.total }} clients</ion-note>
           </div>
 
-          <div class="panel-card">
-            <div class="panel-card__header">
-              <h2 class="panel-card__title">{{ selectedId ? 'Edit client' : 'Create client' }}</h2>
-              <p class="panel-card__subtitle">Client records are stored via <span class="mono">/api/v1/clients</span>.</p>
-            </div>
-            <div class="panel-card__body">
-              <form class="form-grid" @submit.prevent="submit">
-                <ion-input v-model="form.name" fill="outline" label="Name" label-placement="stacked" required />
-                <ion-input v-model="form.identifier" fill="outline" label="Identifier" label-placement="stacked" required />
-                <div class="form-grid form-grid--two">
-                  <ion-select v-model="form.identifierType" fill="outline" label="Identifier type" label-placement="stacked">
-                    <ion-select-option value="ip">IP</ion-select-option>
-                    <ion-select-option value="mac">MAC</ion-select-option>
-                    <ion-select-option value="hostname">Hostname</ion-select-option>
-                  </ion-select>
-                  <ion-select v-model="form.groupId" fill="outline" label="Group" label-placement="stacked">
-                    <ion-select-option value="">No group</ion-select-option>
-                    <ion-select-option v-for="group in groups.items" :key="group.id" :value="group.id">
-                      {{ group.name }}
-                    </ion-select-option>
-                  </ion-select>
-                </div>
-                <ion-textarea v-model="form.comment" fill="outline" label="Comment" label-placement="stacked" auto-grow />
-                <div class="form-actions">
-                  <ion-button fill="clear" @click="resetForm">Clear</ion-button>
-                  <ion-button type="submit" :disabled="clients.saving">
-                    {{ clients.saving ? 'Saving...' : selectedId ? 'Save changes' : 'Create client' }}
-                  </ion-button>
-                </div>
-              </form>
-            </div>
-          </div>
+          <data-table
+            :columns="columns"
+            :rows="filteredItems"
+            :loading="clients.loading"
+            :error="clients.error"
+            empty-title="No clients"
+            empty-message="Create a client definition to match requests by IP, MAC, or host identifier."
+            :selected-id="selectedId"
+            @retry="refresh"
+            @select="selectItem"
+          >
+            <template #cell-name="{ row }">
+              <div>
+                <strong>{{ row.name }}</strong>
+                <p class="muted mono" style="margin: 0.35rem 0 0;">{{ row.identifier }}</p>
+              </div>
+            </template>
+            <template #cell-group="{ row }">
+              {{ groupName(row.groupId) }}
+            </template>
+            <template #cell-updatedAt="{ row }">
+              {{ formatDateTime(row.updatedAt) }}
+            </template>
+            <template #actions="{ row }">
+              <ion-button size="small" fill="clear" @click="selectItem(row)">Edit</ion-button>
+              <ion-button size="small" fill="clear" color="danger" @click="removeItem(row.id)">Delete</ion-button>
+            </template>
+          </data-table>
         </div>
+
+        <editor-modal
+          :is-open="isEditorOpen"
+          :busy="clients.saving"
+          :title="selectedId ? 'Edit client' : 'Create client'"
+          subtitle="Client records are stored via /api/v1/clients."
+          @dismiss="dismissEditor"
+        >
+          <form class="form-grid" @submit.prevent="submit">
+            <ion-input v-model="form.name" fill="outline" label="Name" label-placement="stacked" required />
+            <ion-input v-model="form.identifier" fill="outline" label="Identifier" label-placement="stacked" required />
+            <div class="form-grid form-grid--two">
+              <ion-select v-model="form.identifierType" fill="outline" label="Identifier type" label-placement="stacked">
+                <ion-select-option value="ip">IP</ion-select-option>
+                <ion-select-option value="mac">MAC</ion-select-option>
+                <ion-select-option value="hostname">Hostname</ion-select-option>
+              </ion-select>
+              <ion-select v-model="form.groupId" fill="outline" label="Group" label-placement="stacked">
+                <ion-select-option value="">No group</ion-select-option>
+                <ion-select-option v-for="group in groups.items" :key="group.id" :value="group.id">
+                  {{ group.name }}
+                </ion-select-option>
+              </ion-select>
+            </div>
+            <ion-textarea v-model="form.comment" fill="outline" label="Comment" label-placement="stacked" auto-grow />
+            <div class="form-actions">
+              <ion-button fill="clear" @click="dismissEditor">Cancel</ion-button>
+              <ion-button type="submit" :disabled="clients.saving">
+                {{ clients.saving ? 'Saving...' : selectedId ? 'Save changes' : 'Create client' }}
+              </ion-button>
+            </div>
+          </form>
+        </editor-modal>
       </div>
     </ion-content>
   </ion-page>
@@ -103,6 +101,7 @@ import {
 import { computed, onMounted, reactive, ref } from 'vue'
 
 import DataTable, { type DataColumn } from '@/components/DataTable.vue'
+import EditorModal from '@/components/EditorModal.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { useClientsStore, useGroupsStore } from '@/stores/directory'
 import { useUiStore } from '@/stores/ui'
@@ -120,6 +119,7 @@ const columns: DataColumn[] = [
   { key: 'updatedAt', label: 'Updated' },
 ]
 
+const isEditorOpen = ref(false)
 const search = ref('')
 const selectedId = ref<string | null>(null)
 const form = reactive({
@@ -163,9 +163,16 @@ function applyForm(item: Client) {
 
 function selectItem(item: Client) {
   applyForm(item)
+  isEditorOpen.value = true
 }
 
 function startCreate() {
+  resetForm()
+  isEditorOpen.value = true
+}
+
+function dismissEditor() {
+  isEditorOpen.value = false
   resetForm()
 }
 
@@ -199,7 +206,7 @@ async function submit() {
     ui.showToast('Client created', 'success')
   }
 
-  resetForm()
+  dismissEditor()
 }
 
 async function removeItem(id: string) {
@@ -209,7 +216,7 @@ async function removeItem(id: string) {
 
   await clients.removeItem(id)
   if (selectedId.value === id) {
-    resetForm()
+    dismissEditor()
   }
   ui.showToast('Client deleted', 'success')
 }

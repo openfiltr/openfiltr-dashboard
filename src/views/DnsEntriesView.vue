@@ -13,75 +13,73 @@
           </template>
         </page-header>
 
-        <div class="workspace-grid">
-          <div class="stack">
-            <div class="toolbar-row">
-              <ion-searchbar v-model="search" class="search-input" placeholder="Filter by host or value" />
-              <ion-note color="medium">{{ filteredItems.length }} of {{ store.total }} entries</ion-note>
-            </div>
-
-            <data-table
-              :columns="columns"
-              :rows="filteredItems"
-              :loading="store.loading"
-              :error="store.error"
-              empty-title="No DNS entries"
-              empty-message="Create a local DNS entry to serve static answers."
-              :selected-id="selectedId"
-              @retry="refresh"
-              @select="selectItem"
-            >
-              <template #cell-host="{ row }">
-                <div>
-                  <strong class="mono">{{ row.host }}</strong>
-                  <p class="muted" style="margin: 0.35rem 0 0;">{{ row.value }}</p>
-                </div>
-              </template>
-              <template #cell-enabled="{ row }">
-                <ion-badge :color="row.enabled ? 'success' : 'medium'">
-                  {{ row.enabled ? 'Enabled' : 'Disabled' }}
-                </ion-badge>
-              </template>
-              <template #cell-updatedAt="{ row }">
-                {{ formatDateTime(row.updatedAt) }}
-              </template>
-              <template #actions="{ row }">
-                <ion-button size="small" fill="clear" @click="selectItem(row)">Edit</ion-button>
-                <ion-button size="small" fill="clear" color="danger" @click="removeItem(row.id)">Delete</ion-button>
-              </template>
-            </data-table>
+        <div class="stack">
+          <div class="toolbar-row">
+            <ion-searchbar v-model="search" class="search-input" placeholder="Filter by host or value" />
+            <ion-note color="medium">{{ filteredItems.length }} of {{ store.total }} entries</ion-note>
           </div>
 
-          <div class="panel-card">
-            <div class="panel-card__header">
-              <h2 class="panel-card__title">{{ selectedId ? 'Edit DNS entry' : 'Create DNS entry' }}</h2>
-              <p class="panel-card__subtitle">Entries are sent to <span class="mono">/api/v1/dns/entries</span>.</p>
-            </div>
-            <div class="panel-card__body">
-              <form class="form-grid" @submit.prevent="submit">
-                <ion-input v-model="form.host" fill="outline" label="Host" label-placement="stacked" required />
-                <div class="form-grid form-grid--two">
-                  <ion-select v-model="form.entryType" fill="outline" label="Entry type" label-placement="stacked">
-                    <ion-select-option value="A">A</ion-select-option>
-                    <ion-select-option value="AAAA">AAAA</ion-select-option>
-                    <ion-select-option value="CNAME">CNAME</ion-select-option>
-                    <ion-select-option value="TXT">TXT</ion-select-option>
-                  </ion-select>
-                  <ion-input v-model.number="form.ttl" type="number" fill="outline" label="TTL" label-placement="stacked" />
-                </div>
-                <ion-input v-model="form.value" fill="outline" label="Value" label-placement="stacked" required />
-                <ion-textarea v-model="form.comment" fill="outline" label="Comment" label-placement="stacked" auto-grow />
-                <ion-toggle v-model="form.enabled" justify="space-between">Enabled</ion-toggle>
-                <div class="form-actions">
-                  <ion-button fill="clear" @click="resetForm">Clear</ion-button>
-                  <ion-button type="submit" :disabled="store.saving">
-                    {{ store.saving ? 'Saving...' : selectedId ? 'Save changes' : 'Create entry' }}
-                  </ion-button>
-                </div>
-              </form>
-            </div>
-          </div>
+          <data-table
+            :columns="columns"
+            :rows="filteredItems"
+            :loading="store.loading"
+            :error="store.error"
+            empty-title="No DNS entries"
+            empty-message="Create a local DNS entry to serve static answers."
+            :selected-id="selectedId"
+            @retry="refresh"
+            @select="selectItem"
+          >
+            <template #cell-host="{ row }">
+              <div>
+                <strong class="mono">{{ row.host }}</strong>
+                <p class="muted" style="margin: 0.35rem 0 0;">{{ row.value }}</p>
+              </div>
+            </template>
+            <template #cell-enabled="{ row }">
+              <ion-badge :color="row.enabled ? 'success' : 'medium'">
+                {{ row.enabled ? 'Enabled' : 'Disabled' }}
+              </ion-badge>
+            </template>
+            <template #cell-updatedAt="{ row }">
+              {{ formatDateTime(row.updatedAt) }}
+            </template>
+            <template #actions="{ row }">
+              <ion-button size="small" fill="clear" @click="selectItem(row)">Edit</ion-button>
+              <ion-button size="small" fill="clear" color="danger" @click="removeItem(row.id)">Delete</ion-button>
+            </template>
+          </data-table>
         </div>
+
+        <editor-modal
+          :is-open="isEditorOpen"
+          :busy="store.saving"
+          :title="selectedId ? 'Edit DNS entry' : 'Create DNS entry'"
+          subtitle="Entries are sent to /api/v1/dns/entries."
+          @dismiss="dismissEditor"
+        >
+          <form class="form-grid" @submit.prevent="submit">
+            <ion-input v-model="form.host" fill="outline" label="Host" label-placement="stacked" required />
+            <div class="form-grid form-grid--two">
+              <ion-select v-model="form.entryType" fill="outline" label="Entry type" label-placement="stacked">
+                <ion-select-option value="A">A</ion-select-option>
+                <ion-select-option value="AAAA">AAAA</ion-select-option>
+                <ion-select-option value="CNAME">CNAME</ion-select-option>
+                <ion-select-option value="TXT">TXT</ion-select-option>
+              </ion-select>
+              <ion-input v-model.number="form.ttl" type="number" fill="outline" label="TTL" label-placement="stacked" />
+            </div>
+            <ion-input v-model="form.value" fill="outline" label="Value" label-placement="stacked" required />
+            <ion-textarea v-model="form.comment" fill="outline" label="Comment" label-placement="stacked" auto-grow />
+            <ion-toggle v-model="form.enabled" justify="space-between">Enabled</ion-toggle>
+            <div class="form-actions">
+              <ion-button fill="clear" @click="dismissEditor">Cancel</ion-button>
+              <ion-button type="submit" :disabled="store.saving">
+                {{ store.saving ? 'Saving...' : selectedId ? 'Save changes' : 'Create entry' }}
+              </ion-button>
+            </div>
+          </form>
+        </editor-modal>
       </div>
     </ion-content>
   </ion-page>
@@ -104,6 +102,7 @@ import {
 import { computed, onMounted, reactive, ref } from 'vue'
 
 import DataTable, { type DataColumn } from '@/components/DataTable.vue'
+import EditorModal from '@/components/EditorModal.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { useDnsEntriesStore } from '@/stores/dns'
 import { useUiStore } from '@/stores/ui'
@@ -121,6 +120,7 @@ const columns: DataColumn[] = [
   { key: 'updatedAt', label: 'Updated' },
 ]
 
+const isEditorOpen = ref(false)
 const search = ref('')
 const selectedId = ref<string | null>(null)
 const form = reactive({
@@ -160,9 +160,16 @@ function applyForm(item: DnsEntry) {
 
 function selectItem(item: DnsEntry) {
   applyForm(item)
+  isEditorOpen.value = true
 }
 
 function startCreate() {
+  resetForm()
+  isEditorOpen.value = true
+}
+
+function dismissEditor() {
+  isEditorOpen.value = false
   resetForm()
 }
 
@@ -198,7 +205,7 @@ async function submit() {
     ui.showToast('DNS entry created', 'success')
   }
 
-  resetForm()
+  dismissEditor()
 }
 
 async function removeItem(id: string) {
@@ -208,7 +215,7 @@ async function removeItem(id: string) {
 
   await store.removeItem(id)
   if (selectedId.value === id) {
-    resetForm()
+    dismissEditor()
   }
   ui.showToast('DNS entry deleted', 'success')
 }
