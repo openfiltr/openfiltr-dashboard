@@ -13,70 +13,68 @@
           </template>
         </page-header>
 
-        <div class="workspace-grid">
-          <div class="stack">
-            <div class="toolbar-row">
-              <ion-searchbar v-model="search" class="search-input" placeholder="Filter rules locally" />
-              <ion-note color="medium">{{ filteredItems.length }} of {{ store.total }} rules</ion-note>
-            </div>
-
-            <data-table
-              :columns="columns"
-              :rows="filteredItems"
-              :loading="store.loading"
-              :error="store.error"
-              empty-title="No block rules"
-              empty-message="Create a block rule to start filtering domains."
-              :selected-id="selectedId"
-              @retry="refresh"
-              @select="selectItem"
-            >
-              <template #cell-pattern="{ row }">
-                <div>
-                  <strong class="mono">{{ row.pattern }}</strong>
-                  <p class="muted" style="margin: 0.35rem 0 0;">{{ formatMaybe(row.comment, 'No comment') }}</p>
-                </div>
-              </template>
-              <template #cell-enabled="{ row }">
-                <ion-badge :color="row.enabled ? 'success' : 'medium'">
-                  {{ row.enabled ? 'Enabled' : 'Disabled' }}
-                </ion-badge>
-              </template>
-              <template #cell-updatedAt="{ row }">
-                {{ formatDateTime(row.updatedAt) }}
-              </template>
-              <template #actions="{ row }">
-                <ion-button size="small" fill="clear" @click="selectItem(row)">Edit</ion-button>
-                <ion-button size="small" fill="clear" color="danger" @click="removeItem(row.id)">Delete</ion-button>
-              </template>
-            </data-table>
+        <div class="stack">
+          <div class="toolbar-row">
+            <ion-searchbar v-model="search" class="search-input" placeholder="Filter rules locally" />
+            <ion-note color="medium">{{ filteredItems.length }} of {{ store.total }} rules</ion-note>
           </div>
 
-          <div class="panel-card">
-            <div class="panel-card__header">
-              <h2 class="panel-card__title">{{ selectedId ? 'Edit block rule' : 'Create block rule' }}</h2>
-              <p class="panel-card__subtitle">Patterns are submitted to <span class="mono">/api/v1/filtering/block-rules</span>.</p>
-            </div>
-            <div class="panel-card__body">
-              <form class="form-grid" @submit.prevent="submit">
-                <ion-input v-model="form.pattern" fill="outline" label="Pattern" label-placement="stacked" placeholder="example.com" required />
-                <ion-select v-model="form.ruleType" fill="outline" label="Rule type" label-placement="stacked">
-                  <ion-select-option value="exact">Exact</ion-select-option>
-                  <ion-select-option value="wildcard">Wildcard</ion-select-option>
-                  <ion-select-option value="regex">Regex</ion-select-option>
-                </ion-select>
-                <ion-textarea v-model="form.comment" fill="outline" label="Comment" label-placement="stacked" auto-grow />
-                <ion-toggle v-model="form.enabled" justify="space-between">Enabled</ion-toggle>
-                <div class="form-actions">
-                  <ion-button fill="clear" @click="resetForm">Clear</ion-button>
-                  <ion-button type="submit" :disabled="store.saving">
-                    {{ store.saving ? 'Saving...' : selectedId ? 'Save changes' : 'Create rule' }}
-                  </ion-button>
-                </div>
-              </form>
-            </div>
-          </div>
+          <data-table
+            :columns="columns"
+            :rows="filteredItems"
+            :loading="store.loading"
+            :error="store.error"
+            empty-title="No block rules"
+            empty-message="Create a block rule to start filtering domains."
+            :selected-id="selectedId"
+            @retry="refresh"
+            @select="selectItem"
+          >
+            <template #cell-pattern="{ row }">
+              <div>
+                <strong class="mono">{{ row.pattern }}</strong>
+                <p class="muted" style="margin: 0.35rem 0 0;">{{ formatMaybe(row.comment, 'No comment') }}</p>
+              </div>
+            </template>
+            <template #cell-enabled="{ row }">
+              <ion-badge :color="row.enabled ? 'success' : 'medium'">
+                {{ row.enabled ? 'Enabled' : 'Disabled' }}
+              </ion-badge>
+            </template>
+            <template #cell-updatedAt="{ row }">
+              {{ formatDateTime(row.updatedAt) }}
+            </template>
+            <template #actions="{ row }">
+              <ion-button size="small" fill="clear" @click="selectItem(row)">Edit</ion-button>
+              <ion-button size="small" fill="clear" color="danger" @click="removeItem(row.id)">Delete</ion-button>
+            </template>
+          </data-table>
         </div>
+
+        <editor-modal
+          :is-open="isEditorOpen"
+          :busy="store.saving"
+          :title="selectedId ? 'Edit block rule' : 'Create block rule'"
+          subtitle="Patterns are submitted to /api/v1/filtering/block-rules."
+          @dismiss="dismissEditor"
+        >
+          <form class="form-grid" @submit.prevent="submit">
+            <ion-input v-model="form.pattern" fill="outline" label="Pattern" label-placement="stacked" placeholder="example.com" required />
+            <ion-select v-model="form.ruleType" fill="outline" label="Rule type" label-placement="stacked">
+              <ion-select-option value="exact">Exact</ion-select-option>
+              <ion-select-option value="wildcard">Wildcard</ion-select-option>
+              <ion-select-option value="regex">Regex</ion-select-option>
+            </ion-select>
+            <ion-textarea v-model="form.comment" fill="outline" label="Comment" label-placement="stacked" auto-grow />
+            <ion-toggle v-model="form.enabled" justify="space-between">Enabled</ion-toggle>
+            <div class="form-actions">
+              <ion-button fill="clear" @click="dismissEditor">Cancel</ion-button>
+              <ion-button type="submit" :disabled="store.saving">
+                {{ store.saving ? 'Saving...' : selectedId ? 'Save changes' : 'Create rule' }}
+              </ion-button>
+            </div>
+          </form>
+        </editor-modal>
       </div>
     </ion-content>
   </ion-page>
@@ -99,6 +97,7 @@ import {
 import { computed, onMounted, reactive, ref } from 'vue'
 
 import DataTable, { type DataColumn } from '@/components/DataTable.vue'
+import EditorModal from '@/components/EditorModal.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { useBlockRulesStore } from '@/stores/rules'
 import { useUiStore } from '@/stores/ui'
@@ -115,6 +114,7 @@ const columns: DataColumn[] = [
   { key: 'updatedAt', label: 'Updated' },
 ]
 
+const isEditorOpen = ref(false)
 const search = ref('')
 const selectedId = ref<string | null>(null)
 const form = reactive({
@@ -150,9 +150,16 @@ function applyForm(item: Rule) {
 
 function selectItem(item: Rule) {
   applyForm(item)
+  isEditorOpen.value = true
 }
 
 function startCreate() {
+  resetForm()
+  isEditorOpen.value = true
+}
+
+function dismissEditor() {
+  isEditorOpen.value = false
   resetForm()
 }
 
@@ -184,7 +191,7 @@ async function submit() {
     ui.showToast('Block rule created', 'success')
   }
 
-  resetForm()
+  dismissEditor()
 }
 
 async function removeItem(id: string) {
@@ -194,7 +201,7 @@ async function removeItem(id: string) {
 
   await store.removeItem(id)
   if (selectedId.value === id) {
-    resetForm()
+    dismissEditor()
   }
   ui.showToast('Block rule deleted', 'success')
 }

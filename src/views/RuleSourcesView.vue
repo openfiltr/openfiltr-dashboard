@@ -13,70 +13,68 @@
           </template>
         </page-header>
 
-        <div class="workspace-grid">
-          <div class="stack">
-            <div class="toolbar-row">
-              <ion-searchbar v-model="search" class="search-input" placeholder="Filter by name or URL" />
-              <ion-note color="medium">{{ filteredItems.length }} of {{ store.total }} sources</ion-note>
-            </div>
-
-            <data-table
-              :columns="columns"
-              :rows="filteredItems"
-              :loading="store.loading"
-              :error="store.error"
-              empty-title="No rule sources"
-              empty-message="Create a rule source to keep remote block lists in sync."
-              :selected-id="selectedId"
-              @retry="refresh"
-              @select="selectItem"
-            >
-              <template #cell-name="{ row }">
-                <div>
-                  <strong>{{ row.name }}</strong>
-                  <p class="muted mono" style="margin: 0.35rem 0 0;">{{ row.url }}</p>
-                </div>
-              </template>
-              <template #cell-enabled="{ row }">
-                <ion-badge :color="row.enabled ? 'success' : 'medium'">
-                  {{ row.enabled ? 'Enabled' : 'Disabled' }}
-                </ion-badge>
-              </template>
-              <template #cell-lastUpdatedAt="{ row }">
-                {{ formatDateTime(row.lastUpdatedAt) }}
-              </template>
-              <template #cell-ruleCount="{ row }">
-                {{ formatNumber(row.ruleCount) }}
-              </template>
-              <template #actions="{ row }">
-                <ion-button size="small" fill="clear" @click="selectItem(row)">Edit</ion-button>
-                <ion-button size="small" fill="clear" @click="triggerRefresh(row.id)">Refresh</ion-button>
-                <ion-button size="small" fill="clear" color="danger" @click="removeItem(row.id)">Delete</ion-button>
-              </template>
-            </data-table>
+        <div class="stack">
+          <div class="toolbar-row">
+            <ion-searchbar v-model="search" class="search-input" placeholder="Filter by name or URL" />
+            <ion-note color="medium">{{ filteredItems.length }} of {{ store.total }} sources</ion-note>
           </div>
 
-          <div class="panel-card">
-            <div class="panel-card__header">
-              <h2 class="panel-card__title">{{ selectedId ? 'Edit rule source' : 'Create rule source' }}</h2>
-              <p class="panel-card__subtitle">Refreshing only updates metadata today; the backend marks the source refreshed.</p>
-            </div>
-            <div class="panel-card__body">
-              <form class="form-grid" @submit.prevent="submit">
-                <ion-input v-model="form.name" fill="outline" label="Name" label-placement="stacked" required />
-                <ion-input v-model="form.url" fill="outline" label="URL" label-placement="stacked" type="url" required />
-                <ion-input v-model="form.format" fill="outline" label="Format" label-placement="stacked" placeholder="hosts" />
-                <ion-toggle v-model="form.enabled" justify="space-between">Enabled</ion-toggle>
-                <div class="form-actions">
-                  <ion-button fill="clear" @click="resetForm">Clear</ion-button>
-                  <ion-button type="submit" :disabled="store.saving">
-                    {{ store.saving ? 'Saving...' : selectedId ? 'Save changes' : 'Create source' }}
-                  </ion-button>
-                </div>
-              </form>
-            </div>
-          </div>
+          <data-table
+            :columns="columns"
+            :rows="filteredItems"
+            :loading="store.loading"
+            :error="store.error"
+            empty-title="No rule sources"
+            empty-message="Create a rule source to keep remote block lists in sync."
+            :selected-id="selectedId"
+            @retry="refresh"
+            @select="selectItem"
+          >
+            <template #cell-name="{ row }">
+              <div>
+                <strong>{{ row.name }}</strong>
+                <p class="muted mono" style="margin: 0.35rem 0 0;">{{ row.url }}</p>
+              </div>
+            </template>
+            <template #cell-enabled="{ row }">
+              <ion-badge :color="row.enabled ? 'success' : 'medium'">
+                {{ row.enabled ? 'Enabled' : 'Disabled' }}
+              </ion-badge>
+            </template>
+            <template #cell-lastUpdatedAt="{ row }">
+              {{ formatDateTime(row.lastUpdatedAt) }}
+            </template>
+            <template #cell-ruleCount="{ row }">
+              {{ formatNumber(row.ruleCount) }}
+            </template>
+            <template #actions="{ row }">
+              <ion-button size="small" fill="clear" @click="selectItem(row)">Edit</ion-button>
+              <ion-button size="small" fill="clear" @click="triggerRefresh(row.id)">Refresh</ion-button>
+              <ion-button size="small" fill="clear" color="danger" @click="removeItem(row.id)">Delete</ion-button>
+            </template>
+          </data-table>
         </div>
+
+        <editor-modal
+          :is-open="isEditorOpen"
+          :busy="store.saving"
+          :title="selectedId ? 'Edit rule source' : 'Create rule source'"
+          subtitle="Refreshing only updates metadata today; the backend marks the source refreshed."
+          @dismiss="dismissEditor"
+        >
+          <form class="form-grid" @submit.prevent="submit">
+            <ion-input v-model="form.name" fill="outline" label="Name" label-placement="stacked" required />
+            <ion-input v-model="form.url" fill="outline" label="URL" label-placement="stacked" type="url" required />
+            <ion-input v-model="form.format" fill="outline" label="Format" label-placement="stacked" placeholder="hosts" />
+            <ion-toggle v-model="form.enabled" justify="space-between">Enabled</ion-toggle>
+            <div class="form-actions">
+              <ion-button fill="clear" @click="dismissEditor">Cancel</ion-button>
+              <ion-button type="submit" :disabled="store.saving">
+                {{ store.saving ? 'Saving...' : selectedId ? 'Save changes' : 'Create source' }}
+              </ion-button>
+            </div>
+          </form>
+        </editor-modal>
       </div>
     </ion-content>
   </ion-page>
@@ -96,6 +94,7 @@ import {
 import { computed, onMounted, reactive, ref } from 'vue'
 
 import DataTable, { type DataColumn } from '@/components/DataTable.vue'
+import EditorModal from '@/components/EditorModal.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { useRuleSourcesStore } from '@/stores/rules'
 import { useUiStore } from '@/stores/ui'
@@ -113,6 +112,7 @@ const columns: DataColumn[] = [
   { key: 'lastUpdatedAt', label: 'Last refreshed' },
 ]
 
+const isEditorOpen = ref(false)
 const search = ref('')
 const selectedId = ref<string | null>(null)
 const form = reactive({
@@ -148,9 +148,16 @@ function applyForm(item: RuleSource) {
 
 function selectItem(item: RuleSource) {
   applyForm(item)
+  isEditorOpen.value = true
 }
 
 function startCreate() {
+  resetForm()
+  isEditorOpen.value = true
+}
+
+function dismissEditor() {
+  isEditorOpen.value = false
   resetForm()
 }
 
@@ -182,7 +189,7 @@ async function submit() {
     ui.showToast('Rule source created', 'success')
   }
 
-  resetForm()
+  dismissEditor()
 }
 
 async function triggerRefresh(id: string) {
@@ -197,7 +204,7 @@ async function removeItem(id: string) {
 
   await store.removeItem(id)
   if (selectedId.value === id) {
-    resetForm()
+    dismissEditor()
   }
   ui.showToast('Rule source deleted', 'success')
 }

@@ -108,6 +108,33 @@ select {
   align-items: start;
 }
 
+.editor-modal {
+  --width: min(100% - 2rem, 760px);
+  --max-width: 760px;
+  --height: min(100% - 2rem, 880px);
+  --max-height: 880px;
+  --border-radius: 28px;
+  --box-shadow: 0 30px 80px rgba(16, 24, 40, 0.16);
+}
+
+.editor-modal__header ion-toolbar {
+  --background: rgba(246, 247, 241, 0.96);
+  --border-color: rgba(16, 24, 40, 0.08);
+  --color: var(--app-text);
+}
+
+.editor-modal ion-content {
+  --background: transparent;
+}
+
+.editor-modal__body {
+  padding: 1rem;
+}
+
+.editor-modal__card {
+  box-shadow: none;
+}
+
 .panel-card {
   background: var(--app-surface);
   border: 1px solid rgba(16, 24, 40, 0.08);
@@ -551,6 +578,18 @@ ion-split-pane:not(.split-pane-visible) > .shell-content {
 @media (max-width: 768px) {
   .page-shell {
     padding: 1rem;
+  }
+
+  .editor-modal {
+    --width: 100%;
+    --max-width: 100%;
+    --height: 100%;
+    --max-height: 100%;
+    --border-radius: 24px 24px 0 0;
+  }
+
+  .editor-modal__body {
+    padding: 0.75rem;
   }
 
   .shell-topbar {

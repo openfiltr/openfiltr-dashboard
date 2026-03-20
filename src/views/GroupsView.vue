@@ -13,59 +13,57 @@
           </template>
         </page-header>
 
-        <div class="workspace-grid">
-          <div class="stack">
-            <div class="toolbar-row">
-              <ion-searchbar v-model="search" class="search-input" placeholder="Filter groups locally" />
-              <ion-note color="medium">{{ filteredItems.length }} of {{ store.total }} groups</ion-note>
-            </div>
-
-            <data-table
-              :columns="columns"
-              :rows="filteredItems"
-              :loading="store.loading"
-              :error="store.error"
-              empty-title="No groups"
-              empty-message="Create a group to organise client definitions."
-              :selected-id="selectedId"
-              @retry="refresh"
-              @select="selectItem"
-            >
-              <template #cell-name="{ row }">
-                <div>
-                  <strong>{{ row.name }}</strong>
-                  <p class="muted" style="margin: 0.35rem 0 0;">{{ row.description || 'No description' }}</p>
-                </div>
-              </template>
-              <template #cell-updatedAt="{ row }">
-                {{ formatDateTime(row.updatedAt) }}
-              </template>
-              <template #actions="{ row }">
-                <ion-button size="small" fill="clear" @click="selectItem(row)">Edit</ion-button>
-                <ion-button size="small" fill="clear" color="danger" @click="removeItem(row.id)">Delete</ion-button>
-              </template>
-            </data-table>
+        <div class="stack">
+          <div class="toolbar-row">
+            <ion-searchbar v-model="search" class="search-input" placeholder="Filter groups locally" />
+            <ion-note color="medium">{{ filteredItems.length }} of {{ store.total }} groups</ion-note>
           </div>
 
-          <div class="panel-card">
-            <div class="panel-card__header">
-              <h2 class="panel-card__title">{{ selectedId ? 'Edit group' : 'Create group' }}</h2>
-              <p class="panel-card__subtitle">Group records are stored via <span class="mono">/api/v1/groups</span>.</p>
-            </div>
-            <div class="panel-card__body">
-              <form class="form-grid" @submit.prevent="submit">
-                <ion-input v-model="form.name" fill="outline" label="Name" label-placement="stacked" required />
-                <ion-textarea v-model="form.description" fill="outline" label="Description" label-placement="stacked" auto-grow />
-                <div class="form-actions">
-                  <ion-button fill="clear" @click="resetForm">Clear</ion-button>
-                  <ion-button type="submit" :disabled="store.saving">
-                    {{ store.saving ? 'Saving...' : selectedId ? 'Save changes' : 'Create group' }}
-                  </ion-button>
-                </div>
-              </form>
-            </div>
-          </div>
+          <data-table
+            :columns="columns"
+            :rows="filteredItems"
+            :loading="store.loading"
+            :error="store.error"
+            empty-title="No groups"
+            empty-message="Create a group to organise client definitions."
+            :selected-id="selectedId"
+            @retry="refresh"
+            @select="selectItem"
+          >
+            <template #cell-name="{ row }">
+              <div>
+                <strong>{{ row.name }}</strong>
+                <p class="muted" style="margin: 0.35rem 0 0;">{{ row.description || 'No description' }}</p>
+              </div>
+            </template>
+            <template #cell-updatedAt="{ row }">
+              {{ formatDateTime(row.updatedAt) }}
+            </template>
+            <template #actions="{ row }">
+              <ion-button size="small" fill="clear" @click="selectItem(row)">Edit</ion-button>
+              <ion-button size="small" fill="clear" color="danger" @click="removeItem(row.id)">Delete</ion-button>
+            </template>
+          </data-table>
         </div>
+
+        <editor-modal
+          :is-open="isEditorOpen"
+          :busy="store.saving"
+          :title="selectedId ? 'Edit group' : 'Create group'"
+          subtitle="Group records are stored via /api/v1/groups."
+          @dismiss="dismissEditor"
+        >
+          <form class="form-grid" @submit.prevent="submit">
+            <ion-input v-model="form.name" fill="outline" label="Name" label-placement="stacked" required />
+            <ion-textarea v-model="form.description" fill="outline" label="Description" label-placement="stacked" auto-grow />
+            <div class="form-actions">
+              <ion-button fill="clear" @click="dismissEditor">Cancel</ion-button>
+              <ion-button type="submit" :disabled="store.saving">
+                {{ store.saving ? 'Saving...' : selectedId ? 'Save changes' : 'Create group' }}
+              </ion-button>
+            </div>
+          </form>
+        </editor-modal>
       </div>
     </ion-content>
   </ion-page>
@@ -84,6 +82,7 @@ import {
 import { computed, onMounted, reactive, ref } from 'vue'
 
 import DataTable, { type DataColumn } from '@/components/DataTable.vue'
+import EditorModal from '@/components/EditorModal.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { useGroupsStore } from '@/stores/directory'
 import { useUiStore } from '@/stores/ui'
@@ -98,6 +97,7 @@ const columns: DataColumn[] = [
   { key: 'updatedAt', label: 'Updated' },
 ]
 
+const isEditorOpen = ref(false)
 const search = ref('')
 const selectedId = ref<string | null>(null)
 const form = reactive({
@@ -129,9 +129,16 @@ function applyForm(item: Group) {
 
 function selectItem(item: Group) {
   applyForm(item)
+  isEditorOpen.value = true
 }
 
 function startCreate() {
+  resetForm()
+  isEditorOpen.value = true
+}
+
+function dismissEditor() {
+  isEditorOpen.value = false
   resetForm()
 }
 
@@ -159,7 +166,7 @@ async function submit() {
     ui.showToast('Group created', 'success')
   }
 
-  resetForm()
+  dismissEditor()
 }
 
 async function removeItem(id: string) {
@@ -169,7 +176,7 @@ async function removeItem(id: string) {
 
   await store.removeItem(id)
   if (selectedId.value === id) {
-    resetForm()
+    dismissEditor()
   }
   ui.showToast('Group deleted', 'success')
 }

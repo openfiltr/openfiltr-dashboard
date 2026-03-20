@@ -9,6 +9,7 @@
         >
           <template #actions>
             <ion-button fill="outline" @click="refresh" :disabled="store.loading">Reload</ion-button>
+            <ion-button @click="openEditor">New token</ion-button>
           </template>
         </page-header>
 
@@ -25,58 +26,56 @@
           </template>
         </state-notice>
 
-        <div class="workspace-grid">
-          <div class="stack">
-            <data-table
-              :columns="columns"
-              :rows="store.items"
-              :loading="store.loading"
-              :error="store.error"
-              empty-title="No API tokens"
-              empty-message="Create an API token for automation or CLI access."
-              @retry="refresh"
-              @select="noop"
-            >
-              <template #cell-name="{ row }">
-                <div>
-                  <strong>{{ row.name }}</strong>
-                  <p class="muted mono" style="margin: 0.35rem 0 0;">{{ row.scopes }}</p>
-                </div>
-              </template>
-              <template #cell-createdAt="{ row }">
-                {{ formatDateTime(row.createdAt) }}
-              </template>
-              <template #cell-lastUsedAt="{ row }">
-                {{ formatDateTime(row.lastUsedAt) }}
-              </template>
-              <template #cell-expiresAt="{ row }">
-                {{ formatDateTime(row.expiresAt) }}
-              </template>
-              <template #actions="{ row }">
-                <ion-button size="small" fill="clear" color="danger" @click="removeItem(row.id)">Delete</ion-button>
-              </template>
-            </data-table>
-          </div>
-
-          <div class="panel-card">
-            <div class="panel-card__header">
-              <h2 class="panel-card__title">Create API token</h2>
-              <p class="panel-card__subtitle">Optional expiry dates are sent in RFC3339 via <span class="mono">POST /api/v1/auth/tokens</span>.</p>
-            </div>
-            <div class="panel-card__body">
-              <form class="form-grid" @submit.prevent="submit">
-                <ion-input v-model="form.name" fill="outline" label="Name" label-placement="stacked" required />
-                <ion-input v-model="form.expiresAt" type="datetime-local" fill="outline" label="Expires at" label-placement="stacked" />
-                <div class="form-actions">
-                  <ion-button fill="clear" @click="resetForm">Clear</ion-button>
-                  <ion-button type="submit" :disabled="store.saving">
-                    {{ store.saving ? 'Creating...' : 'Create token' }}
-                  </ion-button>
-                </div>
-              </form>
-            </div>
-          </div>
+        <div class="stack">
+          <data-table
+            :columns="columns"
+            :rows="store.items"
+            :loading="store.loading"
+            :error="store.error"
+            empty-title="No API tokens"
+            empty-message="Create an API token for automation or CLI access."
+            @retry="refresh"
+            @select="noop"
+          >
+            <template #cell-name="{ row }">
+              <div>
+                <strong>{{ row.name }}</strong>
+                <p class="muted mono" style="margin: 0.35rem 0 0;">{{ row.scopes }}</p>
+              </div>
+            </template>
+            <template #cell-createdAt="{ row }">
+              {{ formatDateTime(row.createdAt) }}
+            </template>
+            <template #cell-lastUsedAt="{ row }">
+              {{ formatDateTime(row.lastUsedAt) }}
+            </template>
+            <template #cell-expiresAt="{ row }">
+              {{ formatDateTime(row.expiresAt) }}
+            </template>
+            <template #actions="{ row }">
+              <ion-button size="small" fill="clear" color="danger" @click="removeItem(row.id)">Delete</ion-button>
+            </template>
+          </data-table>
         </div>
+
+        <editor-modal
+          :is-open="isEditorOpen"
+          :busy="store.saving"
+          title="Create API token"
+          subtitle="Optional expiry dates are sent in RFC3339 via POST /api/v1/auth/tokens."
+          @dismiss="dismissEditor"
+        >
+          <form class="form-grid" @submit.prevent="submit">
+            <ion-input v-model="form.name" fill="outline" label="Name" label-placement="stacked" required />
+            <ion-input v-model="form.expiresAt" type="datetime-local" fill="outline" label="Expires at" label-placement="stacked" />
+            <div class="form-actions">
+              <ion-button fill="clear" @click="dismissEditor">Cancel</ion-button>
+              <ion-button type="submit" :disabled="store.saving">
+                {{ store.saving ? 'Creating...' : 'Create token' }}
+              </ion-button>
+            </div>
+          </form>
+        </editor-modal>
       </div>
     </ion-content>
   </ion-page>
@@ -84,10 +83,11 @@
 
 <script setup lang="ts">
 import { IonButton, IonContent, IonInput, IonPage } from '@ionic/vue'
-import { onMounted, reactive } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 
 import CopyField from '@/components/CopyField.vue'
 import DataTable, { type DataColumn } from '@/components/DataTable.vue'
+import EditorModal from '@/components/EditorModal.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import StateNotice from '@/components/StateNotice.vue'
 import { useTokensStore } from '@/stores/tokens'
@@ -104,6 +104,7 @@ const columns: DataColumn[] = [
   { key: 'expiresAt', label: 'Expires' },
 ]
 
+const isEditorOpen = ref(false)
 const form = reactive({
   name: '',
   expiresAt: '',
@@ -117,6 +118,16 @@ async function refresh() {
   await store.refresh()
 }
 
+function openEditor() {
+  resetForm()
+  isEditorOpen.value = true
+}
+
+function dismissEditor() {
+  isEditorOpen.value = false
+  resetForm()
+}
+
 function resetForm() {
   form.name = ''
   form.expiresAt = ''
@@ -128,7 +139,7 @@ async function submit() {
     expiresAt: toIsoFromDateTimeLocal(form.expiresAt) ?? '',
   })
   ui.showToast('API token created', 'success')
-  resetForm()
+  dismissEditor()
 }
 
 async function removeItem(id: string) {
