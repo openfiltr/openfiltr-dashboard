@@ -10,20 +10,18 @@
         <ion-toolbar>
           <ion-title>{{ title }}</ion-title>
           <ion-buttons slot="end">
-            <ion-button fill="clear" :disabled="busy" @click="$emit('dismiss')">Close</ion-button>
+            <ion-button fill="clear" :disabled="busy" @click="$emit('dismiss')">
+              <ion-icon slot="icon-only" :icon="closeOutline" />
+            </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
       <ion-content :fullscreen="true">
         <div class="editor-modal__body">
-          <div class="panel-card editor-modal__card">
-            <div v-if="subtitle" class="panel-card__header">
-              <p class="panel-card__subtitle">{{ subtitle }}</p>
-            </div>
-            <div class="panel-card__body">
-              <slot />
-            </div>
+          <div v-if="subtitle" class="editor-modal__intro">
+            <p class="editor-modal__subtitle">{{ subtitle }}</p>
           </div>
+          <slot />
         </div>
       </ion-content>
     </ion-page>
@@ -36,11 +34,13 @@ import {
   IonButtons,
   IonContent,
   IonHeader,
+  IonIcon,
   IonModal,
   IonPage,
   IonTitle,
   IonToolbar,
 } from '@ionic/vue'
+import { closeOutline } from 'ionicons/icons'
 
 defineProps<{
   busy?: boolean
